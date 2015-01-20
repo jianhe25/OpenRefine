@@ -510,7 +510,7 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
   elmts.or_views_date.html($.i18n._('core-views')["date"]);
   elmts.okButton.html($.i18n._('core-buttons')["apply"]);
   elmts.or_views_enter.html($.i18n._('core-buttons')["enter"]);
-  elmts.okallButton.html($.i18n._('core-buttons')["apply-to-all"]);
+  elmts.okallButton.html($.i18n._('core-buttons')["apply-to-more"]);
   elmts.or_views_ctrlEnter.html($.i18n._('core-views')["ctrl-enter"]);
   elmts.cancelButton.html($.i18n._('core-buttons')["cancel"]);
   elmts.or_views_esc.html($.i18n._('core-buttons')["esc"]);
@@ -552,23 +552,32 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
     MenuSystem.dismissAll();
 
     if (applyOthers) {
-      Refine.postCoreProcess(
-        "mass-edit",
-        {},
-        {
-          columnName: Refine.cellIndexToColumn(self._cellIndex).name,
-          expression: "value",
-          edits: JSON.stringify([{
-            from: [ originalContent ],
-            to: value,
-            type: type
-          }])
-        },
-        { cellsChanged: true }
+      var column = Refine.cellIndexToColumn(self._cellIndex);
+      ui.browsingEngine.addFacet(
+          "recommendChange",
+          {
+            "name": column.name,
+            "columnName": column.name,
+            "expression": "value"
+          }
       );
+      //Refine.postCoreProcess(
+      //  "mass-edit",
+      //  {},
+      //  {
+      //    columnName: Refine.cellIndexToColumn(self._cellIndex).name,
+      //    expression: "value",
+      //    edits: JSON.stringify([{
+      //      from: [ originalContent ],
+      //      to: value,
+      //      type: type
+      //    }])
+      //  },
+      //  { cellsChanged: true }
+      //);
     } else {
       Refine.postCoreProcess(
-        "edit-one-cell", 
+        "edit-one-cell",
         {},
         {
           row: self._rowIndex,

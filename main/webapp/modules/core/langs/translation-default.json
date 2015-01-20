@@ -665,6 +665,7 @@
 		"match": "Match",
 		"copy": "Copy",
 		"transpose": "Transpose",
-		"apply-to-all": "Apply to All Identical Cells"
+		"apply-to-all": "Apply to All Identical Cells",
+		"apply-to-more": "Apply to More Cells"
 	}
 }

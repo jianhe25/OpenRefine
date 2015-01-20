@@ -49,6 +49,7 @@ import com.google.refine.browsing.facets.RangeFacet;
 import com.google.refine.browsing.facets.ScatterplotFacet;
 import com.google.refine.browsing.facets.TextSearchFacet;
 import com.google.refine.browsing.facets.TimeRangeFacet;
+import com.google.refine.browsing.facets.RecommendChangeFacet;
 import com.google.refine.browsing.util.ConjunctiveFilteredRecords;
 import com.google.refine.browsing.util.ConjunctiveFilteredRows;
 import com.google.refine.browsing.util.FilteredRecordsAsFilteredRows;
@@ -196,6 +197,8 @@ public class Engine implements Jsonizable {
                     facet = new ScatterplotFacet();
                 } else if ("text".equals(type)) {
                     facet = new TextSearchFacet();
+                } else if ("recommendChange".equals(type)) {
+                    facet = new RecommendChangeFacet();
                 }
 
                 if (facet != null) {

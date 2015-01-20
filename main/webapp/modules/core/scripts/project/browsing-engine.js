@@ -183,6 +183,10 @@ BrowsingEngine.prototype.addFacet = function(type, config, options) {
   case "text":
     facet = new TextSearchFacet(elmt, config, options);
     break;
+  case "recommendChange":
+    config['sub_type'] = 'recommendChange';
+    facet = new ListFacet(elmt, config, options);
+    break;
   default:
     facet = new ListFacet(elmt, config, options);
   }

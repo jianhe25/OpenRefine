@@ -79,8 +79,12 @@ ListFacet.prototype.getUIState = function() {
 };
 
 ListFacet.prototype.getJSON = function() {
+  var listType = "list";
+  if ("sub_type" in this._config && this._config.sub_type == "recommendChange") {
+    listType = "recommendChange";
+  }
   var o = {
-      type: "list",
+      type: listType,
       name: this._config.name,
       columnName: this._config.columnName,
       expression: this._config.expression,
