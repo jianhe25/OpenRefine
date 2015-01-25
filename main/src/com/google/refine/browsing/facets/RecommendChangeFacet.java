@@ -7,17 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.refine.browsing.*;
+import com.google.refine.browsing.filters.ExpressionMultiColumnEqualRowFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
 import com.google.refine.ProjectManager;
-import com.google.refine.browsing.DecoratedValue;
-import com.google.refine.browsing.FilteredRecords;
-import com.google.refine.browsing.FilteredRows;
-import com.google.refine.browsing.RecordFilter;
-import com.google.refine.browsing.RowFilter;
 import com.google.refine.browsing.filters.AllRowsRecordFilter;
 import com.google.refine.browsing.filters.AnyRowRecordFilter;
 import com.google.refine.expr.Evaluable;
@@ -41,7 +38,7 @@ public class RecommendChangeFacet implements Facet {
     protected boolean _omitBlank;
     protected boolean _omitError;
 
-    protected List<NominalFacetChoice> _selection = new LinkedList<NominalFacetChoice>();
+    protected List<NominalPredicate> _selection = new LinkedList<NominalPredicate>();
     protected boolean _selectBlank;
     protected boolean _selectError;
 
@@ -55,7 +52,7 @@ public class RecommendChangeFacet implements Facet {
     /*
      * Computed results
      */
-    protected List<NominalFacetChoice> _choices = new LinkedList<NominalFacetChoice>();
+    protected List<NominalPredicate> _choices = new LinkedList<NominalPredicate>();
     protected int _blankCount;
     protected int _errorCount;
 
@@ -79,7 +76,7 @@ public class RecommendChangeFacet implements Facet {
             writer.key("choiceCount"); writer.value(_choices.size());
         } else {
             writer.key("choices"); writer.array();
-            for (NominalFacetChoice choice : _choices) {
+            for (NominalPredicate choice : _choices) {
                 choice.write(writer, options);
             }
             writer.endArray();
@@ -152,14 +149,21 @@ public class RecommendChangeFacet implements Facet {
         for (int i = 0; i < length; i++) {
             JSONObject oc = a.getJSONObject(i);
             JSONObject ocv = oc.getJSONObject("v");
+            JSONArray predicts = ocv.getJSONArray("predicts");
+            int len = predicts.length();
+            String[] predicateColumns = new String[len];
+            Object[] predicateValues = new Object[len];
+            for (int j = 0; j < len; ++j) {
+                JSONObject predict = predicts.getJSONObject(j);
+                predicateColumns[j] = predict.getString("c");
+                predicateValues[j] = predict.get("v");
+            }
+            String label = ocv.getString("l");
+            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumns, predicateValues, label);
+            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
+            nominalPredicate.selected = true;
 
-            DecoratedValue decoratedValue = new DecoratedValue(
-                    ocv.get("v"), ocv.getString("l"));
-
-            NominalFacetChoice nominalFacetChoice = new NominalFacetChoice(decoratedValue);
-            nominalFacetChoice.selected = true;
-
-            _selection.add(nominalFacetChoice);
+            _selection.add(nominalPredicate);
         }
 
         _omitBlank = JSONUtilities.getBoolean(o, "omitBlank", false);
@@ -171,7 +175,19 @@ public class RecommendChangeFacet implements Facet {
 
     @Override
     public RowFilter getRowFilter(Project project) {
-        return null;
+        return
+                _eval == null ||
+                        _errorMessage != null ||
+                        (_selection.size() == 0 && !_selectBlank && !_selectError) ?
+                        null :
+                        new ExpressionMultiColumnEqualRowFilter(
+                                _eval,
+                                _columnName,
+                                project,
+                                createMatches(),
+                                _selectBlank,
+                                _selectError,
+                                _invert);
     }
 
     @Override
@@ -185,13 +201,29 @@ public class RecommendChangeFacet implements Facet {
 
     @Override
     public void computeChoices(Project project, FilteredRows filteredRows) {
-        _choices.add(new NominalFacetChoice(new DecoratedValue("MartialStatus, City", "Change 'M' to 'TEST_VALUE' because State='AK'")));
-        _choices.add(new NominalFacetChoice(new DecoratedValue("State, Zip", "Change 'AK' to 'TEST_VALUE' because Zip=1128'")));
-        _choices.add(new NominalFacetChoice(new DecoratedValue("City, State", "Change 'ALEXANDRIA' to 'TEST_VALUE' because State=VA")));
+        String[] predicateColumns = new String[]{project.columnModel.columns.get(7).getName(), "State(String)"};
+        Object[] predicateValues = new Object[]{"M", "AK"};
+        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "Change 'M' to 'TEST_VALUE' because State='AK'")));
+
+        predicateColumns = new String[]{"State(String)", "Zip(Integer)"};
+        predicateValues = new Object[]{"AK", 99712};
+        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "Change 'AK' to 'TEST_VALUE' because Zip=99712'")));
+
+        predicateColumns = new String[]{"City(String)", "State(String)"};
+        predicateValues = new Object[]{"ALEXANDRIA", "VA"};
+        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "Change 'ALEXANDRIA' to 'TEST_VALUE' because State=VA")));
     }
 
     @Override
     public void computeChoices(Project project, FilteredRecords filteredRecords) {
-        _choices.add(new NominalFacetChoice(new DecoratedValue("recommendChange", "Change 'Kazi' to 'Jaewoo' because Phone='120-1788'")));
+//        _choices.add(new NominalPredict(new DecoratedPredict("recommendChange", "Change 'Kazi' to 'Jaewoo' because Phone='120-1788'")));
+    }
+
+    protected DecoratedPredicate createMatches() {
+//        DecoratedPredicate[] a = new DecoratedPredicate[_selection.size()];
+//        for (int i = 0; i < a.length; i++) {
+//            a[i] = _selection.get(i).decoratedPredicate;
+//        }
+        return this._selection.get(0).decoratedPredicate;
     }
 }
