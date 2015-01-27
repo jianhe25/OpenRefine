@@ -414,6 +414,7 @@ function init() {
       "scripts/project/scripting.js",
 
       "scripts/facets/list-facet.js",
+      "scripts/facets/change-facet.js",
       "scripts/facets/range-facet.js",
       "scripts/facets/timerange-facet.js",
       "scripts/facets/scatterplot-facet.js",

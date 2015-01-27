@@ -170,6 +170,7 @@ BrowsingEngine.prototype.getJSON = function(keepUnrestrictedFacets, except) {
 BrowsingEngine.prototype.addFacet = function(type, config, options) {
   var elmt = this._createFacetContainer();
   var facet;
+  console.log(config);
   switch (type) {
   case "range":
     facet = new RangeFacet(elmt, config, options);
@@ -184,8 +185,7 @@ BrowsingEngine.prototype.addFacet = function(type, config, options) {
     facet = new TextSearchFacet(elmt, config, options);
     break;
   case "recommendChange":
-    config['sub_type'] = 'recommendChange';
-    facet = new ListFacet(elmt, config, options);
+    facet = new ChangeFacet(elmt, config, options);
     break;
   default:
     facet = new ListFacet(elmt, config, options);

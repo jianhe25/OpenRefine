@@ -8,19 +8,19 @@ import org.json.JSONWriter;
 import com.google.refine.Jsonizable;
 
 /**
- * Store a value and its text label, in case the value is not a string itself.
+ * Store a predicate and its text label, in case the value is not a string itself.
  * For instance, if a value is a date, then its label can be one particular
  * rendering of that date.
  *
  * Facet choices that are presented to the user as text are stored as decorated values.
  */
 public class DecoratedPredicate implements Jsonizable {
-    final public String[] predicateColumns;
+    final public int[] predicateColumnIDs;
     final public Object[] predicateValues;
     final public String label;
 
-    public DecoratedPredicate(String[] predicateColumns, Object[] predicateValues, String label) {
-        this.predicateColumns = predicateColumns;
+    public DecoratedPredicate(int[] predicateColumnIDs, Object[] predicateValues, String label) {
+        this.predicateColumnIDs = predicateColumnIDs;
         this.predicateValues = predicateValues;
         this.label = label;
     }
@@ -31,9 +31,9 @@ public class DecoratedPredicate implements Jsonizable {
         writer.object();
         writer.key("l"); writer.value(label);
         writer.key("predicts"); writer.array();
-        for (int i = 0; i < predicateColumns.length; ++i) {
+        for (int i = 0; i < predicateColumnIDs.length; ++i) {
             writer.object();
-            writer.key("c"); writer.value(predicateColumns[i]);
+            writer.key("c"); writer.value(predicateColumnIDs[i]);
             writer.key("v"); writer.value(predicateValues[i]);
             writer.endObject();
         }

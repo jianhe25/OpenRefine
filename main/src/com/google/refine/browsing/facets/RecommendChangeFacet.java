@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import com.google.refine.browsing.*;
 import com.google.refine.browsing.filters.ExpressionMultiColumnEqualRowFilter;
+import com.google.refine.recommendation.RecommendationEngine;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,7 +46,6 @@ public class RecommendChangeFacet implements Facet {
     /*
      * Derived configuration
      */
-    protected int        _cellIndex;
     protected Evaluable _eval;
     protected String     _errorMessage;
 
@@ -55,6 +55,17 @@ public class RecommendChangeFacet implements Facet {
     protected List<NominalPredicate> _choices = new LinkedList<NominalPredicate>();
     protected int _blankCount;
     protected int _errorCount;
+
+    /*
+     * User update information
+     */
+    protected int       _rowIndex;
+    protected int       _columnIndex;
+    protected String    _from;
+    protected String    _to;
+    protected String    _type;
+
+    protected RecommendationEngine _recommendationEngine = new RecommendationEngine();
 
     public RecommendChangeFacet() {
     }
@@ -123,17 +134,22 @@ public class RecommendChangeFacet implements Facet {
         _expression = o.getString("expression");
         _columnName = o.getString("columnName");
         _invert = o.has("invert") && o.getBoolean("invert");
+        _rowIndex = o.getInt("rowIndex");
+        _columnIndex = o.getInt("columnIndex");
+        _from = o.getString("from");
+        _to = o.getString("to");
+        _type = o.getString("valueType");
 
-        if (_columnName.length() > 0) {
-            Column column = project.columnModel.getColumnByName(_columnName);
-            if (column != null) {
-                _cellIndex = column.getCellIndex();
-            } else {
-                _errorMessage = "No column named " + _columnName;
-            }
-        } else {
-            _cellIndex = -1;
-        }
+//        if (_columnName.length() > 0) {
+//            Column column = project.columnModel.getColumnByName(_columnName);
+//            if (column != null) {
+//                _cellIndex = column.getCellIndex();
+//            } else {
+//                _errorMessage = "No column named " + _columnName;
+//            }
+//        } else {
+//            _cellIndex = -1;
+//        }
 
         try {
             _eval = MetaParser.parse(_expression);
@@ -151,15 +167,15 @@ public class RecommendChangeFacet implements Facet {
             JSONObject ocv = oc.getJSONObject("v");
             JSONArray predicts = ocv.getJSONArray("predicts");
             int len = predicts.length();
-            String[] predicateColumns = new String[len];
+            int[] predicateColumnIDs = new int[len];
             Object[] predicateValues = new Object[len];
             for (int j = 0; j < len; ++j) {
                 JSONObject predict = predicts.getJSONObject(j);
-                predicateColumns[j] = predict.getString("c");
+                predicateColumnIDs[j] = predict.getInt("c");
                 predicateValues[j] = predict.get("v");
             }
             String label = ocv.getString("l");
-            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumns, predicateValues, label);
+            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
             NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
             nominalPredicate.selected = true;
 
@@ -201,17 +217,18 @@ public class RecommendChangeFacet implements Facet {
 
     @Override
     public void computeChoices(Project project, FilteredRows filteredRows) {
-        String[] predicateColumns = new String[]{project.columnModel.columns.get(7).getName(), "State(String)"};
-        Object[] predicateValues = new Object[]{"M", "AK"};
-        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "M -> TEST if State='AK'")));
-
-        predicateColumns = new String[]{"State(String)", "Zip(Integer)"};
-        predicateValues = new Object[]{"AK", 99712};
-        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "AK -> TEST if Zip=99712'")));
-
-        predicateColumns = new String[]{"City(String)", "State(String)"};
-        predicateValues = new Object[]{"ALEXANDRIA", "VA"};
-        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "ALEXANDRIA -> TEST if State=VA")));
+        _choices = _recommendationEngine.recommendChanges(project, _rowIndex, _columnIndex, _from, _to);
+//        String[] predicateColumns = new String[]{project.columnModel.columns.get(7).getName(), "State(String)"};
+//        Object[] predicateValues = new Object[]{"M", "AK"};
+//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "M -> TEST if State='AK'")));
+//
+//        predicateColumns = new String[]{"State(String)", "Zip(Integer)"};
+//        predicateValues = new Object[]{"AK", 99712};
+//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "AK -> TEST if Zip=99712'")));
+//
+//        predicateColumns = new String[]{"City(String)", "State(String)"};
+//        predicateValues = new Object[]{"ALEXANDRIA", "VA"};
+//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "ALEXANDRIA -> TEST if State=VA")));
     }
 
     @Override
@@ -220,10 +237,6 @@ public class RecommendChangeFacet implements Facet {
     }
 
     protected DecoratedPredicate createMatches() {
-//        DecoratedPredicate[] a = new DecoratedPredicate[_selection.size()];
-//        for (int i = 0; i < a.length; i++) {
-//            a[i] = _selection.get(i).decoratedPredicate;
-//        }
         return this._selection.get(0).decoratedPredicate;
     }
 }

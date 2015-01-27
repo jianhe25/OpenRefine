@@ -556,9 +556,14 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
       ui.browsingEngine.addFacet(
           "recommendChange",
           {
-            "name": column.name,
-            "columnName": column.name,
-            "expression": "value"
+            name: column.name,
+            columnName: column.name,
+            expression: "value",
+            rowIndex: self._rowIndex,
+            columnIndex: self._cellIndex,
+            from: originalContent,
+            to: value,
+            type: type,
           }
       );
       //Refine.postCoreProcess(

@@ -66,7 +66,6 @@ public class ExpressionMultiColumnEqualRowFilter implements RowFilter {
     final protected boolean                 _selectError;
     final protected boolean                 _invert;
 
-    protected HashMap<String, Integer>      _columnNameToIndexMap;
     static final protected Logger logger = LoggerFactory.getLogger("refine.broker");
 
 
@@ -86,12 +85,6 @@ public class ExpressionMultiColumnEqualRowFilter implements RowFilter {
         _selectBlank = selectBlank;
         _selectError = selectError;
         _invert = invert;
-
-        _columnNameToIndexMap = new HashMap<String, Integer>();
-        List<Column> columns = project.columnModel.columns;
-        for (Column column : columns) {
-            _columnNameToIndexMap.put(column.getName(), column.getCellIndex());
-        }
     }
 
 
@@ -104,10 +97,10 @@ public class ExpressionMultiColumnEqualRowFilter implements RowFilter {
     }
     
     public boolean internalFilterRow(Project project, int rowIndex, Row row) {
-        int len = this._predicate.predicateColumns.length;
+        int len = this._predicate.predicateColumnIDs.length;
         for (int selectorIndex = 0; selectorIndex < len; ++selectorIndex) {
-            String columnName = this._predicate.predicateColumns[selectorIndex];
-            int cellIndex = this._columnNameToIndexMap.get(columnName);
+            int cellIndex = this._predicate.predicateColumnIDs[selectorIndex];
+            String columnName = this._project.columnModel.columns.get(cellIndex).getName();
             Cell cell = cellIndex < 0 ? null : row.getCell(cellIndex);
             Properties bindings = ExpressionUtils.createBindings(project);
             ExpressionUtils.bind(bindings, row, rowIndex, columnName, cell);

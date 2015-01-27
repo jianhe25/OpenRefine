@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-function ListFacet(div, config, options, selection) {
+function ChangeFacet(div, config, options, selection) {
   this._div = div;
   this._config = config;
   if (!("invert" in this._config)) {
@@ -53,20 +53,20 @@ function ListFacet(div, config, options, selection) {
   this._update();
 }
 
-ListFacet.reconstruct = function(div, uiState) {
-  return new ListFacet(div, uiState.c, uiState.o, uiState.s);
+ChangeFacet.reconstruct = function(div, uiState) {
+  return new ChangeFacet(div, uiState.c, uiState.o, uiState.s);
 };
 
-ListFacet.prototype.dispose = function() {
+ChangeFacet.prototype.dispose = function() {
 };
 
-ListFacet.prototype.reset = function() {
+ChangeFacet.prototype.reset = function() {
   this._selection = [];
   this._blankChoice = null;
   this._errorChoice = null;
 };
 
-ListFacet.prototype.getUIState = function() {
+ChangeFacet.prototype.getUIState = function() {
   var json = {
       c: this.getJSON(),
       o: this._options
@@ -78,9 +78,9 @@ ListFacet.prototype.getUIState = function() {
   return json;
 };
 
-ListFacet.prototype.getJSON = function() {
+ChangeFacet.prototype.getJSON = function() {
   var o = {
-      type: "list",
+      type: "recommendChange",
       name: this._config.name,
       columnName: this._config.columnName,
       expression: this._config.expression,
@@ -89,7 +89,12 @@ ListFacet.prototype.getJSON = function() {
               selection: [],
               selectBlank: this._blankChoice !== null && this._blankChoice.s,
               selectError: this._errorChoice !== null && this._errorChoice.s,
-              invert: this._config.invert
+              invert: this._config.invert,
+      rowIndex: this._config.rowIndex,
+      columnIndex: this._config.columnIndex,
+      from: this._config.from,
+      to: this._config.to,
+      valueType: this._config.type,
   };
   for (var i = 0; i < this._selection.length; i++) {
     var choice = {
@@ -100,13 +105,13 @@ ListFacet.prototype.getJSON = function() {
   return o;
 };
 
-ListFacet.prototype.hasSelection = function() {
+ChangeFacet.prototype.hasSelection = function() {
   return this._selection.length > 0 || 
   (this._blankChoice !== null && this._blankChoice.s) || 
   (this._errorChoice !== null && this._errorChoice.s);
 };
 
-ListFacet.prototype.updateState = function(data) {
+ChangeFacet.prototype.updateState = function(data) {
   this._data = data;
 
   if ("choices" in data) {
@@ -128,7 +133,7 @@ ListFacet.prototype.updateState = function(data) {
   this._update();
 };
 
-ListFacet.prototype._reSortChoices = function() {
+ChangeFacet.prototype._reSortChoices = function() {
   this._data.choices.sort(this._options.sort == "name" ?
       function(a, b) {
     return a.v.l.toLowerCase().localeCompare(b.v.l.toLowerCase());
@@ -140,7 +145,7 @@ ListFacet.prototype._reSortChoices = function() {
   );
 };
 
-ListFacet.prototype._initializeUI = function() {
+ChangeFacet.prototype._initializeUI = function() {
   var self = this;
 
   var facet_id = this._div.attr("id");
@@ -164,7 +169,7 @@ ListFacet.prototype._initializeUI = function() {
           '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n._('core-facets')["name"]+'</a>' +
           '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n._('core-facets')["count"]+'</a>' +
         '</span>' +
-        '<button bind="clusterLink" class="facet-controls-button button">'+$.i18n._('core-facets')["cluster"]+'</button>' +
+        '<button bind="clusterLink" class="facet-controls-button button">'+'ok'+'</button>' +
       '</div>' +
       '<div class="facet-body" bind="bodyDiv">' +
         '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
@@ -218,7 +223,7 @@ ListFacet.prototype._initializeUI = function() {
   }
 };
 
-ListFacet.prototype._copyChoices = function() {
+ChangeFacet.prototype._copyChoices = function() {
   var self = this;
   var frame = DialogSystem.createDialog();
   frame.width("600px");
@@ -254,7 +259,7 @@ ListFacet.prototype._copyChoices = function() {
   textarea.select();
 };
 
-ListFacet.prototype._update = function(resetScroll) {
+ChangeFacet.prototype._update = function(resetScroll) {
   var self = this;
 
   var invert = this._config.invert;
@@ -367,18 +372,21 @@ ListFacet.prototype._update = function(resetScroll) {
     html.push('<div class="facet-choice' + (choice.s ? ' facet-choice-selected' : '') + '" choiceIndex="' + index + '">');
 
     // include/exclude link
-    html.push(
-      '<a href="javascript:{}" class="facet-choice-link facet-choice-toggle" ' +
-        'style="visibility: ' + (choice.s ? 'visible' : 'hidden') + '">' + 
-        (invert != choice.s ? 'exclude' : 'include') + 
-      '</a>'
-    );
+    //html.push(
+    //  '<a href="javascript:{}" class="facet-choice-link facet-choice-toggle" ' +
+    //    'style="visibility: ' + (choice.s ? 'visible' : 'hidden') + '">' +
+    //    (invert != choice.s ? 'exclude' : 'include') +
+    //  '</a>'
+    //);
 
     // edit link
-    if (renderEdit) {
-      html.push('<a href="javascript:{}" class="facet-choice-link facet-choice-edit" style="visibility: hidden">'+$.i18n._('core-facets')["edit"]+'</a>');
-    }
+    //if (renderEdit) {
+    //  html.push('<a href="javascript:{}" class="facet-choice-link facet-choice-edit" style="visibility: hidden">'+$.i18n._('core-facets')["edit"]+'</a>');
+    //}
 
+    html.push(
+        '<input type="checkbox">'
+    )
     html.push('<a href="javascript:{}" class="facet-choice-label">' + encodeHtml(label) + '</a>');
     html.push('<span class="facet-choice-count">' + (invert ? "-" : "") + count + '</span>');
 
@@ -472,7 +480,7 @@ ListFacet.prototype._update = function(resetScroll) {
   window.setTimeout(wireEvents, 100);
 }; // end _update()
 
-ListFacet.prototype._renderBodyControls = function() {
+ChangeFacet.prototype._renderBodyControls = function() {
   var self = this;
   var bodyControls = $('<div>')
   .addClass("facet-body-controls")
@@ -499,7 +507,7 @@ ListFacet.prototype._renderBodyControls = function() {
   });
 };
 
-ListFacet.prototype._getMetaExpression = function() {
+ChangeFacet.prototype._getMetaExpression = function() {
   var r = Scripting.parse(this._config.expression);
 
   return r.language + ':facetCount(' + [
@@ -509,11 +517,11 @@ ListFacet.prototype._getMetaExpression = function() {
       ].join(', ') + ')';
 };
 
-ListFacet.prototype._doEdit = function() {
+ChangeFacet.prototype._doEdit = function() {
   new ClusteringDialog(this._config.columnName, this._config.expression);
 };
 
-ListFacet.prototype._editChoice = function(choice, choiceDiv) {
+ChangeFacet.prototype._editChoice = function(choice, choiceDiv) {
   var self = this;
 
   var menu = MenuSystem.createMenu().addClass("data-table-cell-editor").width("400px");
@@ -612,7 +620,7 @@ ListFacet.prototype._editChoice = function(choice, choiceDiv) {
   });
 };
 
-ListFacet.prototype._select = function(choice, only) {
+ChangeFacet.prototype._select = function(choice, only) {
   if (only) {
     this._selection = [];
     if (this._blankChoice !== null) {
@@ -631,7 +639,7 @@ ListFacet.prototype._select = function(choice, only) {
   this._updateRest();
 };
 
-ListFacet.prototype._deselect = function(choice) {
+ChangeFacet.prototype._deselect = function(choice) {
   if (choice === this._errorChoice || choice === this._blankChoice) {
     choice.s = false;
   } else {
@@ -645,7 +653,7 @@ ListFacet.prototype._deselect = function(choice) {
   this._updateRest();
 };
 
-ListFacet.prototype._reset = function() {
+ChangeFacet.prototype._reset = function() {
   this._selection = [];
   this._blankChoice = null;
   this._errorChoice = null;
@@ -654,13 +662,13 @@ ListFacet.prototype._reset = function() {
   this._updateRest();
 };
 
-ListFacet.prototype._invert = function() {
+ChangeFacet.prototype._invert = function() {
   this._config.invert = !this._config.invert;
 
   this._updateRest();
 };
 
-ListFacet.prototype._remove = function() {
+ChangeFacet.prototype._remove = function() {
   ui.browsingEngine.removeFacet(this);
 
   this._div = null;
@@ -672,11 +680,11 @@ ListFacet.prototype._remove = function() {
   this._data = null;
 };
 
-ListFacet.prototype._updateRest = function() {
+ChangeFacet.prototype._updateRest = function() {
   Refine.update({ engineChanged: true });
 };
 
-ListFacet.prototype._editExpression = function() {
+ChangeFacet.prototype._editExpression = function() {
   var self = this;
   var title = (this._config.columnName) ? 
       ($.i18n._('core-facets')["edit-based-col"]+" " + this._config.columnName) : 
@@ -711,7 +719,7 @@ ListFacet.prototype._editExpression = function() {
   );
 };
 
-ListFacet.prototype._setChoiceCountLimit = function(choiceCount) {
+ChangeFacet.prototype._setChoiceCountLimit = function(choiceCount) {
   var limit = Math.ceil(choiceCount / 1000) * 1000;
   var s = window.prompt($.i18n._('core-facets')["set-max-choices"], limit);
   if (s) {
@@ -722,7 +730,7 @@ ListFacet.prototype._setChoiceCountLimit = function(choiceCount) {
       $.post(
         "command/core/set-preference",
         {
-          name : "ui.browsing.listFacet.limit",
+          name : "ui.browsing.ChangeFacet.limit",
           value : n
         },
         function(o) {
