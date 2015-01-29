@@ -58,6 +58,8 @@ function BrowsingEngine(div, facetConfigs) {
       case "text":
         facet = TextSearchFacet.reconstruct(elmt, facetConfig);
         break;
+      case "recommendChange":
+        facet = ChangeFacet.reconstruct(elmt, facetConfig);
       default:
         facet = ListFacet.reconstruct(elmt, facetConfig);
       }

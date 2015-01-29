@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import com.google.refine.browsing.*;
 import com.google.refine.browsing.filters.ExpressionMultiColumnEqualRowFilter;
+import com.google.refine.browsing.util.ExpressionNominalValueGrouper;
 import com.google.refine.recommendation.RecommendationEngine;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -218,18 +219,16 @@ public class RecommendChangeFacet implements Facet {
     @Override
     public void computeChoices(Project project, FilteredRows filteredRows) {
         _choices = _recommendationEngine.recommendChanges(project, _rowIndex, _columnIndex, _from, _to);
-//        String[] predicateColumns = new String[]{project.columnModel.columns.get(7).getName(), "State(String)"};
-//        Object[] predicateValues = new Object[]{"M", "AK"};
-//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "M -> TEST if State='AK'")));
-//
-//        predicateColumns = new String[]{"State(String)", "Zip(Integer)"};
-//        predicateValues = new Object[]{"AK", 99712};
-//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "AK -> TEST if Zip=99712'")));
-//
-//        predicateColumns = new String[]{"City(String)", "State(String)"};
-//        predicateValues = new Object[]{"ALEXANDRIA", "VA"};
-//        _choices.add(new NominalPredicate(new DecoratedPredicate(predicateColumns, predicateValues, "ALEXANDRIA -> TEST if State=VA")));
+        for (NominalPredicate selected_choice : _selection) {
+            String selectedChoiceLabel = selected_choice.decoratedPredicate.label;
+            for (NominalPredicate choice : _choices) {
+                if (choice.decoratedPredicate.label.equals(selectedChoiceLabel)) {
+                    choice.selected = true;
+                }
+            }
+        }
     }
+
 
     @Override
     public void computeChoices(Project project, FilteredRecords filteredRecords) {

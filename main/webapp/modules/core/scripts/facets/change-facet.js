@@ -384,12 +384,23 @@ ChangeFacet.prototype._update = function(resetScroll) {
     //  html.push('<a href="javascript:{}" class="facet-choice-link facet-choice-edit" style="visibility: hidden">'+$.i18n._('core-facets')["edit"]+'</a>');
     //}
 
-    html.push(
-        '<input type="checkbox">'
-    )
-    html.push('<a href="javascript:{}" class="facet-choice-label">' + encodeHtml(label) + '</a>');
-    html.push('<span class="facet-choice-count">' + (invert ? "-" : "") + count + '</span>');
 
+
+    var isChecked = false
+    if (sessionStorage.getItem("checkbox-" + index)) {
+      // Restore the contents of the text field
+      isChecked = sessionStorage.getItem("checkbox-" + index);
+    }
+    console.log(isChecked);
+    if (isChecked)
+      html.push('<input type="checkbox" ' + ' choiceIndex=' + index + ' checked>')
+    else
+      html.push('<input type="checkbox" ' + ' choiceIndex=' + index + '>')
+    //html.push('<button style="margin-right:10px">x</button>')
+    //html.push('<span class="glyphicon glyphicon-ok"></span>')
+    //html.push('<span class="glyphicon glyphicon-remove" style="margin-left: 5px"></span>')
+    html.push('<a href="javascript:{}" class="facet-choice-label" style="margin-left: 5px">' + encodeHtml(label) + '</a>');
+    html.push('<span class="facet-choice-count">' + (invert ? "-" : "") + count + '</span>');
     html.push('</div>');
   };
   for (var i = 0; i < choices.length; i++) {
@@ -429,6 +440,11 @@ ChangeFacet.prototype._update = function(resetScroll) {
     self._deselect(choice);
   };
 
+  $('[type="checkbox"]').change(function() {
+    var index = parseInt($(this).attr("choiceIndex"), 10);
+    sessionStorage.setItem("checkbox-" + index, $(this).is(":checked"));
+  })
+
   var wireEvents = function() {
     var bodyInnerDiv = self._elmts.bodyInnerDiv;
     bodyInnerDiv.off(); // remove all old handlers
@@ -447,6 +463,9 @@ ChangeFacet.prototype._update = function(resetScroll) {
         select(choice);
       }
     });
+
+
+
     bodyInnerDiv.on('click', '.facet-choice-edit', function(e) {
       e.preventDefault();
       var choice = findChoice($(this));
@@ -678,6 +697,7 @@ ChangeFacet.prototype._remove = function() {
   this._blankChoice = null;
   this._errorChoice = null;
   this._data = null;
+  sessionStorage.clear();
 };
 
 ChangeFacet.prototype._updateRest = function() {

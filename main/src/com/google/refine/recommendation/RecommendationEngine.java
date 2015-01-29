@@ -78,14 +78,14 @@ public class RecommendationEngine {
             int numColumn = correlation.columns.size();
             int[] columnIDs = new int[numColumn];
             Object[] values = new Object[numColumn];
-            String label = from + "->" + to + " IF ";
+            String label = "";
             for (int cid = 0; cid < numColumn; ++cid) {
                 int columnID = correlation.columns.get(cid).getCellIndex();
                 columnIDs[cid] = columnID;
                 values[cid] = selectedRow.getCell(columnID).value;
                 label = label + correlation.columns.get(cid).getName() + "=" + values[cid].toString();
                 if (cid < numColumn - 1)
-                    label = label + " AND ";
+                    label = label + ", ";
             }
             DecoratedPredicate predicate = new DecoratedPredicate(columnIDs, values, label);
             NominalPredicate nominalPreidcate = new NominalPredicate(predicate);
