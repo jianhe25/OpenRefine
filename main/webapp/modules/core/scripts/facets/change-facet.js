@@ -178,7 +178,7 @@ ChangeFacet.prototype._initializeUI = function() {
   );
   this._elmts = DOM.bind(this._div);
 
-  this._elmts.titleSpan.text(this._config.name);
+  this._elmts.titleSpan.text(this._config.from + " -> " + this._config.to);
   this._elmts.changeButton.attr("title",$.i18n._('core-facets')["current-exp"]+": " + this._config.expression).click(function() {
     self._elmts.expressionDiv.slideToggle(100, function() {
       if (self._elmts.expressionDiv.css("display") != "none") {
