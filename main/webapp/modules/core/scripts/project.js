@@ -117,6 +117,8 @@ function resizeAll() {
 }
 
 function initializeUI(uiState) {
+  // sessionStorage only keep data for partial UI update (AJAX updates)
+  sessionStorage.clear();
   $("#loading-message").hide();
   $("#notification-container").hide();
   $("#project-title").show();
