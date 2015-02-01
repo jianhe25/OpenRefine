@@ -105,7 +105,10 @@ public class GetRowsCommand extends Command {
             options.put("project", project);
             options.put("reconCandidateOmitTypes", true);
             options.put("pool", pool);
-            
+            Properties userChange = engine.getUserChange();
+            if (userChange != null)
+                options.put("userChange", userChange);
+
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", callback == null ? "application/json" : "text/javascript");
             
@@ -172,7 +175,7 @@ public class GetRowsCommand extends Command {
             jsonWriter.key("start"); jsonWriter.value(start);
             jsonWriter.key("limit"); jsonWriter.value(limit);
             jsonWriter.key("pool"); pool.write(jsonWriter, options);
-            
+
             jsonWriter.endObject();
             
             if (callback != null) {

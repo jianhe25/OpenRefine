@@ -238,4 +238,16 @@ public class RecommendChangeFacet implements Facet {
     protected DecoratedPredicate createMatches() {
         return this._selection.get(0).decoratedPredicate;
     }
+
+    public Boolean hasSelection() {
+        return _selection.size() > 0;
+    }
+
+    public Properties getUserChange() {
+        Properties userChange = new Properties();
+        userChange.put("columnIndex", _columnIndex);
+        userChange.put("from", _from);
+        userChange.put("to", _to);
+        return userChange;
+    }
 }

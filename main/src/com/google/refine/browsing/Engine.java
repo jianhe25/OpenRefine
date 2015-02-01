@@ -250,4 +250,14 @@ public class Engine implements Jsonizable {
         writer.key(MODE); writer.value(_mode == Mode.RowBased ? MODE_ROW_BASED : MODE_RECORD_BASED);
         writer.endObject();
     }
+
+    public Properties getUserChange() {
+        // Assume only one RecommendChangeFacet has selection, ignore the rest
+        for (Facet facet : _facets) {
+            if (facet instanceof RecommendChangeFacet && ((RecommendChangeFacet) facet).hasSelection()) {
+                return ((RecommendChangeFacet) facet).getUserChange();
+            }
+        }
+        return null;
+    }
 }

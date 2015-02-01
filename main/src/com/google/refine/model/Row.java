@@ -61,7 +61,7 @@ public class Row implements HasFields, Jsonizable {
     
     private static final String FLAGGED = "flagged";
     private static final String STARRED = "starred";
-    
+
     /**
      * Construct a new Row.
      * 
@@ -169,12 +169,22 @@ public class Row implements HasFields, Jsonizable {
         writer.key(STARRED); writer.value(starred);
         
         writer.key("cells"); writer.array();
+        Properties userChange = (Properties) options.get("userChange");
+        int columnIndex = 0;
         for (Cell cell : cells) {
             if (cell != null) {
-                cell.write(writer, options);
+                if (userChange != null && userChange.get("columnIndex").equals(columnIndex) && userChange.get("from").equals(cell.toString())) {
+                    writer.object();
+                    writer.key("v");
+                    writer.value(userChange.get("from").toString() + "->" + userChange.get("to").toString());
+                    writer.endObject();
+                }
+                else
+                    cell.write(writer, options);
             } else {
                 writer.value(null);
             }
+            ++columnIndex;
         }
         writer.endArray();
         

@@ -169,7 +169,8 @@ ChangeFacet.prototype._initializeUI = function() {
           '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n._('core-facets')["name"]+'</a>' +
           '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n._('core-facets')["count"]+'</a>' +
         '</span>' +
-        '<button bind="clusterLink" class="facet-controls-button button">'+'ok'+'</button>' +
+      '<button bind="moreLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'More'+'</button>' +
+      '<div style="clear:both"> </div>' +
       '</div>' +
       '<div class="facet-body" bind="bodyDiv">' +
         '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
@@ -206,10 +207,13 @@ ChangeFacet.prototype._initializeUI = function() {
     }
   });
 
-  this._elmts.clusterLink.click(function() { self._doEdit(); });
-  if (this._config.expression != "value" && this._config.expression != "grel:value") {
-    this._elmts.clusterLink.hide();
-  }
+  this._elmts.moreLink.click(function() {
+    sessionStorage.clear();
+    Refine.update({ engineChanged: true });
+  });
+  //if (this._config.expression != "value" && this._config.expression != "grel:value") {
+  //  this._elmts.clusterLink.hide();
+  //}
 
   if (!("scroll" in this._options) || this._options.scroll) {
     this._elmts.bodyDiv.addClass("facet-body-scrollable");
@@ -368,7 +372,6 @@ ChangeFacet.prototype._update = function(resetScroll) {
   var renderChoice = function(index, choice, customLabel) {
     var label = customLabel || choice.v.l;
     var count = choice.c;
-
     html.push('<div class="facet-choice' + (choice.s ? ' facet-choice-selected' : '') + '" choiceIndex="' + index + '">');
 
     // include/exclude link
@@ -725,11 +728,11 @@ ChangeFacet.prototype._editExpression = function() {
 
         self._elmts.expressionDiv.text(self._config.expression);
         self._elmts.changeButton.attr("title", $.i18n._('core-facets')["current-exp"]+": " + self._config.expression);
-        if (self._config.expression == "value" || self._config.expression == "grel:value") {
-          self._elmts.clusterLink.show();
-        } else {
-          self._elmts.clusterLink.hide();
-        }
+        //if (self._config.expression == "value" || self._config.expression == "grel:value") {
+        //  self._elmts.clusterLink.show();
+        //} else {
+        //  self._elmts.clusterLink.hide();
+        //}
 
         self.reset();
         self._updateRest();
