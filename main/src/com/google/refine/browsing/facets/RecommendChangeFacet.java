@@ -166,14 +166,14 @@ public class RecommendChangeFacet implements Facet {
         for (int i = 0; i < length; i++) {
             JSONObject oc = a.getJSONObject(i);
             JSONObject ocv = oc.getJSONObject("v");
-            JSONArray predicts = ocv.getJSONArray("predicts");
-            int len = predicts.length();
+            JSONArray predicates = ocv.getJSONArray("predicates");
+            int len = predicates.length();
             int[] predicateColumnIDs = new int[len];
             Object[] predicateValues = new Object[len];
             for (int j = 0; j < len; ++j) {
-                JSONObject predict = predicts.getJSONObject(j);
-                predicateColumnIDs[j] = predict.getInt("c");
-                predicateValues[j] = predict.get("v");
+                JSONObject predicate = predicates.getJSONObject(j);
+                predicateColumnIDs[j] = predicate.getInt("c");
+                predicateValues[j] = predicate.get("v");
             }
             String label = ocv.getString("l");
             DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);

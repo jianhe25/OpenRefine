@@ -92,7 +92,7 @@ DataTableView.prototype.render = function() {
   var html = $(
     '<div class="viewpanel-header">' +
       '<div class="viewpanel-rowrecord" bind="rowRecordControls">'+$.i18n._('core-views')["show-as"]+': ' +
-        '<span bind="modeSelectors"></span>' + 
+        '<span bind="modeSelectors"></span>' +
       '</div>' +
       '<div class="viewpanel-pagesize" bind="pageSizeControls"></div>' +
       '<div class="viewpanel-sorting" bind="sortingControls"></div>' +
@@ -134,9 +134,12 @@ DataTableView.prototype.render = function() {
 
   this._renderDataTables(elmts.table[0], elmts.headerTable[0]);
   this._div.empty().append(html);
-  
+
   this.resize();
-  
+
+  if ((columns = sessionStorage.getItem("highlightColumns")) != null) {
+    DataTableView.highlightColumnsByFacetSelection(columns);
+  }
   elmts.dataTableContainer[0].scrollLeft = scrollLeft;
 };
 
@@ -799,3 +802,14 @@ DataTableView.promptExpressionOnVisibleRows = function(column, title, expression
     onDone
   );
 };
+
+DataTableView.highlightColumnsByFacetSelection = function(columnIndexs) {
+  columnIndexs = JSON.parse(columnIndexs);
+  $.map(columnIndexs, function(columnIndex) {
+    column_head = $("tr td:nth-child(" + (columnIndex + 2) + ")").slice(0, 1);
+    column_head.children().addClass("data-table-cell-background-highlight");
+    cells = $("tr td:nth-child(" + (columnIndex + 4) + ")");
+    cells = cells.slice(1);
+    cells.children().addClass("data-table-cell-background-highlight");
+  });
+}

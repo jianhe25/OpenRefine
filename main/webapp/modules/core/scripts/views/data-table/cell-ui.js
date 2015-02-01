@@ -45,6 +45,7 @@ DataTableCellUI.prototype._render = function() {
   var self = this;
   var cell = this._cell;
 
+
   var divContent = $('<div/>')
   .addClass("data-table-cell-content");
 

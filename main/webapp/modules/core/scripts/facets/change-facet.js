@@ -368,6 +368,7 @@ ChangeFacet.prototype._update = function(resetScroll) {
     return temp.text(s).html();
   };
 
+
   var renderEdit = this._config.expression == "value";
   var renderChoice = function(index, choice, customLabel) {
     var label = customLabel || choice.v.l;
@@ -388,13 +389,11 @@ ChangeFacet.prototype._update = function(resetScroll) {
     //}
 
 
-
     var isChecked = false
     if (sessionStorage.getItem("checkbox-" + index)) {
       // Restore the contents of the text field
       isChecked = sessionStorage.getItem("checkbox-" + index);
     }
-    console.log(isChecked);
     if (isChecked)
       html.push('<input type="checkbox" ' + ' choiceIndex=' + index + ' checked>')
     else
@@ -454,6 +453,9 @@ ChangeFacet.prototype._update = function(resetScroll) {
     bodyInnerDiv.on('click', '.facet-choice-label', function(e) {
       e.preventDefault();
       var choice = findChoice($(this));
+      var highlightColumnIndexs = JSON.stringify($.map(choice.v.predicates, function (predicate) { return predicate.c} ));
+      sessionStorage.setItem("highlightColumns", highlightColumnIndexs);
+      DataTableView.highlightColumnsByFacetSelection(highlightColumnIndexs);
       if (choice.s) {
         if (selectionCount > 1) {
           selectOnly(choice);

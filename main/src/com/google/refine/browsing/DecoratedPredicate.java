@@ -30,7 +30,7 @@ public class DecoratedPredicate implements Jsonizable {
             throws JSONException {
         writer.object();
         writer.key("l"); writer.value(label);
-        writer.key("predicts"); writer.array();
+        writer.key("predicates"); writer.array();
         for (int i = 0; i < predicateColumnIDs.length; ++i) {
             writer.object();
             writer.key("c"); writer.value(predicateColumnIDs[i]);
