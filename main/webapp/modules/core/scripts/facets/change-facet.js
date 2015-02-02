@@ -79,6 +79,7 @@ ChangeFacet.prototype.getUIState = function() {
 };
 
 ChangeFacet.prototype.getJSON = function() {
+
   var o = {
       type: "recommendChange",
       name: this._config.name,
@@ -95,12 +96,19 @@ ChangeFacet.prototype.getJSON = function() {
       from: this._config.from,
       to: this._config.to,
       valueType: this._config.type,
+      historyChoices: [],
   };
   for (var i = 0; i < this._selection.length; i++) {
     var choice = {
         v: cloneDeep(this._selection[i].v)
     };
     o.selection.push(choice);
+  }
+  if (sessionStorage.getItem("historyChoices")) {
+    var historyChoices = JSON.parse(sessionStorage.getItem("historyChoices"));
+    for (var i = 0; i < historyChoices.length; i++) {
+      o.historyChoices.push(historyChoices[i]);
+    }
   }
   return o;
 };
@@ -169,7 +177,7 @@ ChangeFacet.prototype._initializeUI = function() {
           '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n._('core-facets')["name"]+'</a>' +
           '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n._('core-facets')["count"]+'</a>' +
         '</span>' +
-      '<button bind="moreLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'More'+'</button>' +
+      '<button bind="nextLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'Next'+'</button>' +
       '<div style="clear:both"> </div>' +
       '</div>' +
       '<div class="facet-body" bind="bodyDiv">' +
@@ -207,8 +215,14 @@ ChangeFacet.prototype._initializeUI = function() {
     }
   });
 
-  this._elmts.moreLink.click(function() {
+  this._elmts.nextLink.click(function() {
+    var historyChoices = JSON.parse(sessionStorage.getItem("historyChoices"));
+    if (historyChoices == null)
+      historyChoices = self._data.choices;
+    if (historyChoices[historyChoices.length - 1] != self._data.choices[self._data.choices.length - 1])
+      historyChoices = historyChoices.concat(self._data.choices);
     sessionStorage.clear();
+    sessionStorage.setItem("historyChoices", JSON.stringify(historyChoices));
     Refine.update({ engineChanged: true });
   });
   //if (this._config.expression != "value" && this._config.expression != "grel:value") {
@@ -445,6 +459,7 @@ ChangeFacet.prototype._update = function(resetScroll) {
   $('[type="checkbox"]').change(function() {
     var index = parseInt($(this).attr("choiceIndex"), 10);
     sessionStorage.setItem("checkbox-" + index, $(this).is(":checked"));
+    self._data.choices[index].r = $(this).is(":checked");
   })
 
   var wireEvents = function() {

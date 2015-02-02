@@ -47,24 +47,29 @@ public class RecommendationEngine {
         }
         return columnInvlists;
     }
-    public List<NominalPredicate> recommendChanges(Project project, int rowIndex, int columnIndex, String from, String to) {
+    public List<NominalPredicate> recommendChanges(Project project,
+                                                   int rowIndex,
+                                                   int columnIndex,
+                                                   String from,
+                                                   String to,
+                                                   List<NominalPredicate> historyChoices) {
         if (_project == null) {
             _project = project;
             _correlations = loadCorrelations();
             _columnInvlists = computeColumnInvLists(rowIndex, columnIndex, from);
         }
-
+        
         for (Correlation correlation : _correlations) {
             if ((power(2, columnIndex) & correlation.mask) > 0) {
-                Set<Integer> invlist = new HashSet<Integer>();
+                Set<Integer> invertedList = new HashSet<Integer>();
                 for (int i = 0; i < correlation.columns.size(); ++i) {
                     if (i == 0)
-                        invlist = new HashSet<Integer>(_columnInvlists[correlation.columns.get(0).getCellIndex()]);
+                        invertedList = new HashSet<Integer>(_columnInvlists[correlation.columns.get(0).getCellIndex()]);
                     else
-                        invlist.retainAll(_columnInvlists[correlation.columns.get(i).getCellIndex()]);
+                        invertedList.retainAll(_columnInvlists[correlation.columns.get(i).getCellIndex()]);
                 }
-                correlation.invList = new ArrayList<Integer>(invlist);
-                correlation.enrichScore = invlist.size() * correlation.score;
+                correlation.invList = new ArrayList<Integer>(invertedList);
+                correlation.enrichScore = invertedList.size() * correlation.score;
             } else {
                 correlation.enrichScore = 0;
             }
@@ -88,9 +93,9 @@ public class RecommendationEngine {
                     label = label + ", ";
             }
             DecoratedPredicate predicate = new DecoratedPredicate(columnIDs, values, label);
-            NominalPredicate nominalPreidcate = new NominalPredicate(predicate);
-            nominalPreidcate.count = correlation.invList.size();
-            choices.add(nominalPreidcate);
+            NominalPredicate nominalPredicate = new NominalPredicate(predicate);
+            nominalPredicate.count = correlation.invList.size();
+            choices.add(nominalPredicate);
         }
         return choices;
     }

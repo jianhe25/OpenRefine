@@ -48,6 +48,7 @@ public class NominalPredicate implements Jsonizable {
     final public DecoratedPredicate decoratedPredicate;
     public int                    count;
     public boolean                selected;
+    public int                    result;
 
     public NominalPredicate(DecoratedPredicate decoratedPredict) {
         this.decoratedPredicate = decoratedPredict;
@@ -60,6 +61,7 @@ public class NominalPredicate implements Jsonizable {
         writer.key("v"); decoratedPredicate.write(writer, options);
         writer.key("c"); writer.value(count);
         writer.key("s"); writer.value(selected);
+        writer.key("r"); writer.value(result);
         writer.endObject();
     }
 }

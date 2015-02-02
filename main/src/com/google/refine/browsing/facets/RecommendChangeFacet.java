@@ -41,6 +41,7 @@ public class RecommendChangeFacet implements Facet {
     protected boolean _omitError;
 
     protected List<NominalPredicate> _selection = new LinkedList<NominalPredicate>();
+    protected List<NominalPredicate> _historyChoices = new LinkedList<NominalPredicate>();
     protected boolean _selectBlank;
     protected boolean _selectError;
 
@@ -179,8 +180,35 @@ public class RecommendChangeFacet implements Facet {
             DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
             NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
             nominalPredicate.selected = true;
-
             _selection.add(nominalPredicate);
+        }
+
+
+        _historyChoices.clear();
+        a = o.getJSONArray("historyChoices");
+        length = a.length();
+        for (int i = 0; i < length; i++) {
+            JSONObject nominalJson = a.getJSONObject(i);
+            String result = nominalJson.getString("r");
+            JSONObject predicateJson = nominalJson.getJSONObject("v");
+
+
+            JSONArray predicates = predicateJson.getJSONArray("predicates");
+            int len = predicates.length();
+            int[] predicateColumnIDs = new int[len];
+            Object[] predicateValues = new Object[len];
+            for (int j = 0; j < len; ++j) {
+                JSONObject predicate = predicates.getJSONObject(j);
+                predicateColumnIDs[j] = predicate.getInt("c");
+                predicateValues[j] = predicate.get("v");
+            }
+            String label = predicateJson.getString("l");
+
+            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
+            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
+            nominalPredicate.selected = true;
+            nominalPredicate.result = result.equals("true")? 1 : 0;
+            _historyChoices.add(nominalPredicate);
         }
 
         _omitBlank = JSONUtilities.getBoolean(o, "omitBlank", false);
@@ -218,7 +246,7 @@ public class RecommendChangeFacet implements Facet {
 
     @Override
     public void computeChoices(Project project, FilteredRows filteredRows) {
-        _choices = _recommendationEngine.recommendChanges(project, _rowIndex, _columnIndex, _from, _to);
+        _choices = _recommendationEngine.recommendChanges(project, _rowIndex, _columnIndex, _from, _to, _historyChoices);
         for (NominalPredicate selected_choice : _selection) {
             String selectedChoiceLabel = selected_choice.decoratedPredicate.label;
             for (NominalPredicate choice : _choices) {
