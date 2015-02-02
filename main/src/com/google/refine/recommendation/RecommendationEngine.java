@@ -24,7 +24,7 @@ public class RecommendationEngine {
     private List<Correlation> _correlations = null;
     private ArrayList<Integer>[] _columnInvlists = null;
     private static final int MAX_NUM_QUESTION = 5;
-
+    private Boolean _isLastBatch;
     protected static final Logger logger = LoggerFactory.getLogger("RecommendationEngine");
 
     public RecommendationEngine() {
@@ -58,7 +58,8 @@ public class RecommendationEngine {
             _correlations = loadCorrelations();
             _columnInvlists = computeColumnInvLists(rowIndex, columnIndex, from);
         }
-        
+
+        List<Correlation> relatedCorrelations = new LinkedList<Correlation>();
         for (Correlation correlation : _correlations) {
             if ((power(2, columnIndex) & correlation.mask) > 0) {
                 Set<Integer> invertedList = new HashSet<Integer>();
@@ -70,16 +71,17 @@ public class RecommendationEngine {
                 }
                 correlation.invList = new ArrayList<Integer>(invertedList);
                 correlation.enrichScore = invertedList.size() * correlation.score;
+                relatedCorrelations.add(correlation);
             } else {
                 correlation.enrichScore = 0;
             }
         }
-        Collections.sort(_correlations, new CorrelationComparator());
+        Collections.sort(relatedCorrelations, new CorrelationComparator());
 
         List<NominalPredicate> choices = new LinkedList<NominalPredicate>();
         Row selectedRow = _project.rows.get(rowIndex);
-        for (int i = 0; i < Math.min(_correlations.size(), MAX_NUM_QUESTION); ++i) {
-            Correlation correlation = _correlations.get(i);
+        for (int i = historyChoices.size(); i < Math.min(relatedCorrelations.size(), historyChoices.size() + MAX_NUM_QUESTION); ++i) {
+            Correlation correlation = relatedCorrelations.get(i);
             int numColumn = correlation.columns.size();
             int[] columnIDs = new int[numColumn];
             Object[] values = new Object[numColumn];
@@ -97,9 +99,12 @@ public class RecommendationEngine {
             nominalPredicate.count = correlation.invList.size();
             choices.add(nominalPredicate);
         }
+        _isLastBatch = (historyChoices.size() + MAX_NUM_QUESTION >= relatedCorrelations.size());
         return choices;
     }
-
+    public Boolean isLastBatch() {
+        return _isLastBatch;
+    }
     public List<Correlation> loadCorrelations() {
         String workDir = System.getProperty("user.dir");
 

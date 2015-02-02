@@ -81,7 +81,7 @@ public class RecommendChangeFacet implements Facet {
         writer.key("expression"); writer.value(_expression);
         writer.key("columnName"); writer.value(_columnName);
         writer.key("invert"); writer.value(_invert);
-
+        writer.key("isLastBatch"); writer.value(_recommendationEngine.isLastBatch());
         if (_errorMessage != null) {
             writer.key("error"); writer.value(_errorMessage);
         } else if (_choices.size() > getLimit()) {

@@ -177,7 +177,7 @@ ChangeFacet.prototype._initializeUI = function() {
           '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n._('core-facets')["name"]+'</a>' +
           '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n._('core-facets')["count"]+'</a>' +
         '</span>' +
-      '<button bind="nextLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'Next'+'</button>' +
+      '<button bind="nextLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'Apply'+'</button>' +
       '<div style="clear:both"> </div>' +
       '</div>' +
       '<div class="facet-body" bind="bodyDiv">' +
@@ -223,6 +223,9 @@ ChangeFacet.prototype._initializeUI = function() {
       historyChoices = historyChoices.concat(self._data.choices);
     sessionStorage.clear();
     sessionStorage.setItem("historyChoices", JSON.stringify(historyChoices));
+    if ($(this).text() == "Finish") {
+      self._remove();
+    }
     Refine.update({ engineChanged: true });
   });
   //if (this._config.expression != "value" && this._config.expression != "grel:value") {
@@ -353,6 +356,10 @@ ChangeFacet.prototype._update = function(resetScroll) {
 
   //this._elmts.statusDiv.show();
   this._elmts.controlsDiv.show();
+
+  if (this._data.isLastBatch) {
+    $(".facet-controls-button").text("Finish");
+  }
 
   var choices = this._data.choices;
   var selectionCount = this._selection.length +
