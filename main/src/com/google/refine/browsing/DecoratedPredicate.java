@@ -2,6 +2,7 @@ package com.google.refine.browsing;
 
 import java.util.Properties;
 
+import com.google.refine.util.MathUtils;
 import org.json.JSONException;
 import org.json.JSONWriter;
 
@@ -39,6 +40,14 @@ public class DecoratedPredicate implements Jsonizable {
         }
         writer.endArray();
         writer.endObject();
+    }
+
+    public long mask() {
+        long totalMask = 0;
+        for (int columnID : predicateColumnIDs) {
+            totalMask += MathUtils.power(2, columnID);
+        }
+        return totalMask;
     }
 }
 

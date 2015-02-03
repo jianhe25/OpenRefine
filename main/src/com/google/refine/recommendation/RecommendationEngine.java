@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.*;
 
 import com.google.refine.model.Row;
+import com.google.refine.util.MathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public class RecommendationEngine {
 
         List<Correlation> relatedCorrelations = new LinkedList<Correlation>();
         for (Correlation correlation : _correlations) {
-            if ((power(2, columnIndex) & correlation.mask) > 0) {
+            if ((MathUtils.power(2, columnIndex) & correlation.mask) > 0) {
                 Set<Integer> invertedList = new HashSet<Integer>();
                 for (int i = 0; i < correlation.columns.size(); ++i) {
                     if (i == 0)
@@ -80,26 +81,50 @@ public class RecommendationEngine {
 
         List<NominalPredicate> choices = new LinkedList<NominalPredicate>();
         Row selectedRow = _project.rows.get(rowIndex);
-        for (int i = historyChoices.size(); i < Math.min(relatedCorrelations.size(), historyChoices.size() + MAX_NUM_QUESTION); ++i) {
-            Correlation correlation = relatedCorrelations.get(i);
-            int numColumn = correlation.columns.size();
-            int[] columnIDs = new int[numColumn];
-            Object[] values = new Object[numColumn];
-            String label = "";
-            for (int cid = 0; cid < numColumn; ++cid) {
-                int columnID = correlation.columns.get(cid).getCellIndex();
-                columnIDs[cid] = columnID;
-                values[cid] = selectedRow.getCell(columnID).value;
-                label = label + correlation.columns.get(cid).getName() + "=" + values[cid].toString();
-                if (cid < numColumn - 1)
-                    label = label + ", ";
+
+        int pointer = 0;
+        for (Correlation correlation : relatedCorrelations) {
+            Boolean prune = false;
+            for (NominalPredicate historyChoice : historyChoices) {
+                long historyMask = historyChoice.decoratedPredicate.mask();
+                if (historyChoice.result > 0 && MathUtils.isSubMask(historyMask, correlation.mask) ||
+                        historyChoice.result == 0 && MathUtils.isSubMask(correlation.mask, historyMask)) {
+                    prune = true;
+                    break;
+                }
             }
-            DecoratedPredicate predicate = new DecoratedPredicate(columnIDs, values, label);
-            NominalPredicate nominalPredicate = new NominalPredicate(predicate);
-            nominalPredicate.count = correlation.invList.size();
-            choices.add(nominalPredicate);
+            for (NominalPredicate choice : choices) {
+                if (choice.decoratedPredicate.mask() != MathUtils.power(2, columnIndex) &&
+                        (MathUtils.isSubMask(choice.decoratedPredicate.mask(), correlation.mask) ||
+                        MathUtils.isSubMask(correlation.mask, choice.decoratedPredicate.mask()))) {
+                    prune = true;
+                    break;
+                }
+            }
+            if (!prune) {
+                int numColumn = correlation.columns.size();
+                int[] columnIDs = new int[numColumn];
+                Object[] values = new Object[numColumn];
+                String label = "";
+                for (int cid = 0; cid < numColumn; ++cid) {
+                    int columnID = correlation.columns.get(cid).getCellIndex();
+                    columnIDs[cid] = columnID;
+                    values[cid] = selectedRow.getCell(columnID).value;
+                    label = label + correlation.columns.get(cid).getName() + "=" + values[cid].toString();
+                    if (cid < numColumn - 1)
+                        label = label + ", ";
+                }
+                DecoratedPredicate predicate = new DecoratedPredicate(columnIDs, values, label);
+                NominalPredicate nominalPredicate = new NominalPredicate(predicate);
+                nominalPredicate.count = correlation.invList.size();
+                choices.add(nominalPredicate);
+            }
+            pointer++;
+            if (choices.size() == MAX_NUM_QUESTION) {
+                break;
+            }
         }
-        _isLastBatch = (historyChoices.size() + MAX_NUM_QUESTION >= relatedCorrelations.size());
+        _isLastBatch = (pointer == relatedCorrelations.size());
         return choices;
     }
 
@@ -150,17 +175,12 @@ public class RecommendationEngine {
     long computeMaskFromColumns(List<Column> columns) {
         long sum = 0;
         for (Column column : columns) {
-            sum += power(2, column.getCellIndex());
+            sum += MathUtils.power(2, column.getCellIndex());
         }
         return sum;
     }
 
-    long power(int base, int exp) {
-        long power = 1;
-        for (int i = 0; i < exp; ++i)
-            power *= base;
-        return power;
-    }
+
 
     public Boolean isLastBatch() {
         return _isLastBatch;
