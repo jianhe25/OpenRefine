@@ -172,7 +172,6 @@ BrowsingEngine.prototype.getJSON = function(keepUnrestrictedFacets, except) {
 BrowsingEngine.prototype.addFacet = function(type, config, options) {
   var elmt = this._createFacetContainer();
   var facet;
-  console.log(config);
   switch (type) {
   case "range":
     facet = new RangeFacet(elmt, config, options);

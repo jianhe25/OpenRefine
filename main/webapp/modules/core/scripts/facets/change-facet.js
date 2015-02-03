@@ -39,9 +39,9 @@ function ChangeFacet(div, config, options, selection) {
   }
 
   this._options = options || {};
-  if (!("sort" in this._options)) {
-    this._options.sort = "name";
-  }
+  //if (!("sort" in this._options)) {
+  //  this._options.sort = "name";
+  //}
 
   this._selection = selection || [];
   this._blankChoice = (config.selectBlank) ? { s : true, c : 0 } : null;
@@ -440,6 +440,8 @@ ChangeFacet.prototype._update = function(resetScroll) {
   this._renderBodyControls();
   this._elmts.bodyInnerDiv[0].scrollTop = scrollTop;
 
+
+
   var getChoice = function(elmt) {
     var index = parseInt(elmt.attr("choiceIndex"),10);
     if (index == -1) {
@@ -477,7 +479,9 @@ ChangeFacet.prototype._update = function(resetScroll) {
       var choice = findChoice($(this));
       var highlightColumnIndexs = JSON.stringify($.map(choice.v.predicates, function (predicate) { return predicate.c} ));
       sessionStorage.setItem("highlightColumns", highlightColumnIndexs);
-      DataTableView.highlightColumnsByFacetSelection(highlightColumnIndexs);
+      sessionStorage.setItem("changeColumn", parseInt(self._config.columnIndex));
+      //console.log('self.columnIndex', self._config.columnIndex);
+      DataTableView.highlightColumnsByFacetSelection(highlightColumnIndexs, self.columnIndex);
       if (choice.s) {
         if (selectionCount > 1) {
           selectOnly(choice);
@@ -523,7 +527,11 @@ ChangeFacet.prototype._update = function(resetScroll) {
       }
     });
   };
-  window.setTimeout(wireEvents, 100);
+  wireEvents();
+
+  if (this._selection.length == 0) {
+    $('.facet-choice-label').first().click();
+  }
 }; // end _update()
 
 ChangeFacet.prototype._renderBodyControls = function() {

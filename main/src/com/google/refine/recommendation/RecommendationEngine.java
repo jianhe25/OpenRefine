@@ -102,9 +102,7 @@ public class RecommendationEngine {
         _isLastBatch = (historyChoices.size() + MAX_NUM_QUESTION >= relatedCorrelations.size());
         return choices;
     }
-    public Boolean isLastBatch() {
-        return _isLastBatch;
-    }
+
     public List<Correlation> loadCorrelations() {
         String workDir = System.getProperty("user.dir");
 
@@ -163,6 +161,10 @@ public class RecommendationEngine {
             power *= base;
         return power;
     }
+
+    public Boolean isLastBatch() {
+        return _isLastBatch;
+    }
 }
 
 class Correlation {
@@ -188,7 +190,7 @@ class CorrelationComparator implements Comparator<Correlation> {
     @Override
     public int compare(Correlation o1, Correlation o2) {
         // write comparison logic here like below , it's just a sample
-        if (o1.enrichScore < o2.enrichScore)
+        if (o1.enrichScore <= o2.enrichScore)
             return 1;
         else
             return -1;

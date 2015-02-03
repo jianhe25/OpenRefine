@@ -176,7 +176,7 @@ public class Row implements HasFields, Jsonizable {
                 if (userChange != null && userChange.get("columnIndex").equals(columnIndex) && userChange.get("from").equals(cell.toString())) {
                     writer.object();
                     writer.key("v");
-                    writer.value(userChange.get("from").toString() + "->" + userChange.get("to").toString());
+                    writer.value(userChange.get("from").toString() + " -> " + userChange.get("to").toString());
                     writer.endObject();
                 }
                 else

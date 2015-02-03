@@ -183,7 +183,6 @@ public class RecommendChangeFacet implements Facet {
             _selection.add(nominalPredicate);
         }
 
-
         _historyChoices.clear();
         a = o.getJSONArray("historyChoices");
         length = a.length();

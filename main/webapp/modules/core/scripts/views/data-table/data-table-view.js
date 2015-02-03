@@ -138,7 +138,7 @@ DataTableView.prototype.render = function() {
   this.resize();
 
   if ((columns = sessionStorage.getItem("highlightColumns")) != null) {
-    DataTableView.highlightColumnsByFacetSelection(columns);
+    DataTableView.highlightColumnsByFacetSelection(columns, sessionStorage.getItem("changeColumn"));
   }
   elmts.dataTableContainer[0].scrollLeft = scrollLeft;
 };
@@ -803,13 +803,22 @@ DataTableView.promptExpressionOnVisibleRows = function(column, title, expression
   );
 };
 
-DataTableView.highlightColumnsByFacetSelection = function(columnIndexs) {
+DataTableView.highlightColumnsByFacetSelection = function(columnIndexs, changeColumn) {
   columnIndexs = JSON.parse(columnIndexs);
   $.map(columnIndexs, function(columnIndex) {
     column_head = $("tr td:nth-child(" + (columnIndex + 2) + ")").slice(0, 1);
     column_head.children().addClass("data-table-cell-background-highlight");
     cells = $("tr td:nth-child(" + (columnIndex + 4) + ")");
+    console.log('old-columnIndex', columnIndex + 4);
     cells = cells.slice(1);
     cells.children().addClass("data-table-cell-background-highlight");
   });
+
+  if (changeColumn != null) {
+    //console.log("changeColumn", (changeColumn + 4));
+    changeColumn = parseInt(changeColumn);
+    cells = $("tr td:nth-child(" + (changeColumn + 4) + ")");
+    cells = cells.slice(1);
+    cells.children().addClass("data-table-cell-text-highlight");
+  }
 }
