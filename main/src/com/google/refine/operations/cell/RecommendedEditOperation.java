@@ -101,8 +101,8 @@ public class RecommendedEditOperation extends EngineDependentMassCellOperation {
     protected String createDescription(Column column,
                                        List<CellChange> cellChanges) {
 
-        return "Recommended  edit " + cellChanges.size() +
-                " cells in column " + column.getName();
+        return "Change " + cellChanges.size() + " cells from " + _from + " to " + _to 
+            + " in column " + column.getName();
     }
 
     @Override
