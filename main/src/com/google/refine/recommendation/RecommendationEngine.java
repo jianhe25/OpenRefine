@@ -38,9 +38,11 @@ public class RecommendationEngine {
         ArrayList<Integer>[] columnInvlists = new ArrayList[numColumns];
         for (int c = 0; c < numColumns; ++c) {
             ArrayList<Integer> columnInvlist = new ArrayList<Integer>();
-            Object standardValue = _project.rows.get(rowIndex).getCell(c).value;
+            String standardValue = _project.rows.get(rowIndex).getCell(c).toString();
+            if (c == columnIndex)
+                standardValue = from;
             for (int r = 0; r < numRows; ++r) {
-                if (_project.rows.get(r).getCell(c).value.equals(standardValue)) {
+                if (_project.rows.get(r).getCell(c).value.toString().equals(standardValue)) {
                     columnInvlist.add(r);
                 }
             }
@@ -57,9 +59,9 @@ public class RecommendationEngine {
         if (_project == null) {
             _project = project;
             _correlations = loadCorrelations();
-            _columnInvlists = computeColumnInvLists(rowIndex, columnIndex, from);
         }
 
+        _columnInvlists = computeColumnInvLists(rowIndex, columnIndex, from);
         List<Correlation> relatedCorrelations = new LinkedList<Correlation>();
         for (Correlation correlation : _correlations) {
             if ((MathUtils.power(2, columnIndex) & correlation.mask) > 0) {
@@ -72,7 +74,9 @@ public class RecommendationEngine {
                 }
                 correlation.invList = new ArrayList<Integer>(invertedList);
                 correlation.enrichScore = invertedList.size() * correlation.score;
-                relatedCorrelations.add(correlation);
+                if (correlation.invList.size() > 0) {
+                    relatedCorrelations.add(correlation);
+                }
             } else {
                 correlation.enrichScore = 0;
             }
@@ -109,7 +113,11 @@ public class RecommendationEngine {
                 for (int cid = 0; cid < numColumn; ++cid) {
                     int columnID = correlation.columns.get(cid).getCellIndex();
                     columnIDs[cid] = columnID;
-                    values[cid] = selectedRow.getCell(columnID).value;
+                    // ensure predicates not change even after tuples changed
+                    if (columnID != columnIndex)
+                        values[cid] = selectedRow.getCell(columnID).value;
+                    else
+                        values[cid] = from;
                     label = label + correlation.columns.get(cid).getName() + "=" + values[cid].toString();
                     if (cid < numColumn - 1)
                         label = label + ", ";

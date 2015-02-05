@@ -90,6 +90,7 @@ function registerCommands() {
   RS.registerCommand(module, "edit-one-cell", new Packages.com.google.refine.commands.cell.EditOneCellCommand());
   RS.registerCommand(module, "text-transform", new Packages.com.google.refine.commands.cell.TextTransformCommand());
   RS.registerCommand(module, "mass-edit", new Packages.com.google.refine.commands.cell.MassEditCommand());
+  RS.registerCommand(module, "recommended-edit", new Packages.com.google.refine.commands.cell.RecommendedEditCommand());
   RS.registerCommand(module, "join-multi-value-cells", new Packages.com.google.refine.commands.cell.JoinMultiValueCellsCommand());
   RS.registerCommand(module, "split-multi-value-cells", new Packages.com.google.refine.commands.cell.SplitMultiValueCellsCommand());
   RS.registerCommand(module, "fill-down", new Packages.com.google.refine.commands.cell.FillDownCommand());
@@ -150,6 +151,7 @@ function registerOperations() {
 
   OR.registerOperation(module, "text-transform", Packages.com.google.refine.operations.cell.TextTransformOperation);
   OR.registerOperation(module, "mass-edit", Packages.com.google.refine.operations.cell.MassEditOperation);
+  OR.registerOperation(module, "recommended-edit", Packages.com.google.refine.operations.cell.RecommendedEditOperation);
 
   OR.registerOperation(module, "multivalued-cell-join", Packages.com.google.refine.operations.cell.MultiValuedCellJoinOperation);
   OR.registerOperation(module, "multivalued-cell-split", Packages.com.google.refine.operations.cell.MultiValuedCellSplitOperation);

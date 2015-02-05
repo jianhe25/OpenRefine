@@ -79,7 +79,6 @@ ChangeFacet.prototype.getUIState = function() {
 };
 
 ChangeFacet.prototype.getJSON = function() {
-
   var o = {
       type: "recommendChange",
       name: this._config.name,
@@ -177,7 +176,7 @@ ChangeFacet.prototype._initializeUI = function() {
           '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n._('core-facets')["name"]+'</a>' +
           '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n._('core-facets')["count"]+'</a>' +
         '</span>' +
-      '<button bind="nextLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'Apply'+'</button>' +
+      '<button bind="applyLink" class="facet-controls-button button" style="float: right; margin-left: 17px;">'+'Apply'+'</button>' +
       '<div style="clear:both"> </div>' +
       '</div>' +
       '<div class="facet-body" bind="bodyDiv">' +
@@ -186,7 +185,7 @@ ChangeFacet.prototype._initializeUI = function() {
   );
   this._elmts = DOM.bind(this._div);
 
-  this._elmts.titleSpan.text(this._config.from + " -> " + this._config.to);
+  this._elmts.titleSpan.text("Change " + this._config.from + " to " + this._config.to + " when");
   this._elmts.changeButton.attr("title",$.i18n._('core-facets')["current-exp"]+": " + this._config.expression).click(function() {
     self._elmts.expressionDiv.slideToggle(100, function() {
       if (self._elmts.expressionDiv.css("display") != "none") {
@@ -215,7 +214,7 @@ ChangeFacet.prototype._initializeUI = function() {
     }
   });
 
-  this._elmts.nextLink.click(function() {
+  this._elmts.applyLink.click(function() {
     var historyChoices = JSON.parse(sessionStorage.getItem("historyChoices"));
     if (historyChoices == null)
       historyChoices = self._data.choices;
@@ -223,6 +222,7 @@ ChangeFacet.prototype._initializeUI = function() {
       historyChoices = historyChoices.concat(self._data.choices);
     sessionStorage.clear();
     sessionStorage.setItem("historyChoices", JSON.stringify(historyChoices));
+    commitChange();
     if ($(this).text() == "Finish") {
       self._remove();
     }
@@ -242,6 +242,53 @@ ChangeFacet.prototype._initializeUI = function() {
       }
     });
   }
+
+  var commitChange = function() {
+    //console.log("come to commit change");
+    var choices = self._data.choices;
+    var correctChoices = []
+    for (var i = 0; i < choices.length; ++i) {
+      if (choices[i].r) {
+        correctChoices.push(choices[i]);
+      }
+    }
+    if (correctChoices.length == 0)
+      return;
+    Refine.postCoreProcess(
+        "recommended-edit",
+        {},
+        {
+          columnName: self._config.columnName,
+          expression: "value",
+          from: self._config.from,
+          to: self._config.to,
+          correctChoices: JSON.stringify(correctChoices)
+        },
+        {
+          // limit edits to rows constrained only by the other facets
+          engineConfig: ui.browsingEngine.getJSON(false, self),
+          cellsChanged: true
+        },
+        {
+          onDone: function(o) {
+            var selection = [];
+            var gotSelection = false;
+            for (var i = 0; i < self._selection.length; i++) {
+              var choice = self._selection[i];
+              if (choice.v.v == originalContent) {
+                if (gotSelection) {
+                  continue;
+                }
+                choice.v.v = text;
+                gotSelection = true; // eliminate duplicated selections due to changing one selected choice to another
+              }
+              selection.push(choice);
+            }
+            self._selection = selection;
+          }
+        }
+    );
+  };
 };
 
 ChangeFacet.prototype._copyChoices = function() {

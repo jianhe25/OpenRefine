@@ -2,8 +2,11 @@ package com.google.refine.browsing;
 
 import java.util.Properties;
 
+import com.google.refine.model.Project;
 import com.google.refine.util.MathUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.JSONWriter;
 
 import com.google.refine.Jsonizable;
@@ -26,6 +29,19 @@ public class DecoratedPredicate implements Jsonizable {
         this.label = label;
     }
 
+    public static DecoratedPredicate initializeFromJSON(JSONObject predicateJson) throws JSONException {
+        JSONArray predicates = predicateJson.getJSONArray("predicates");
+        int len = predicates.length();
+        int[] predicateColumnIDs = new int[len];
+        Object[] predicateValues = new Object[len];
+        for (int j = 0; j < len; ++j) {
+            JSONObject predicate = predicates.getJSONObject(j);
+            predicateColumnIDs[j] = predicate.getInt("c");
+            predicateValues[j] = predicate.get("v");
+        }
+        String label = predicateJson.getString("l");
+        return new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
+    }
     @Override
     public void write(JSONWriter writer, Properties options)
             throws JSONException {

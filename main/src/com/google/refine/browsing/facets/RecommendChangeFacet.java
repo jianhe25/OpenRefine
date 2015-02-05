@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import com.google.refine.browsing.*;
 import com.google.refine.browsing.filters.ExpressionMultiColumnEqualRowFilter;
-import com.google.refine.browsing.util.ExpressionNominalValueGrouper;
 import com.google.refine.recommendation.RecommendationEngine;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,10 +21,11 @@ import com.google.refine.browsing.filters.AnyRowRecordFilter;
 import com.google.refine.expr.Evaluable;
 import com.google.refine.expr.MetaParser;
 import com.google.refine.expr.ParsingException;
-import com.google.refine.model.Column;
 import com.google.refine.model.Project;
 import com.google.refine.util.JSONUtilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RecommendChangeFacet implements Facet {
     /*
@@ -69,6 +69,7 @@ public class RecommendChangeFacet implements Facet {
 
     protected RecommendationEngine _recommendationEngine = new RecommendationEngine();
 
+    protected static final Logger logger = LoggerFactory.getLogger("recommendChangeFacet");
     public RecommendChangeFacet() {
     }
 
@@ -82,6 +83,7 @@ public class RecommendChangeFacet implements Facet {
         writer.key("columnName"); writer.value(_columnName);
         writer.key("invert"); writer.value(_invert);
         writer.key("isLastBatch"); writer.value(_recommendationEngine.isLastBatch());
+
         if (_errorMessage != null) {
             writer.key("error"); writer.value(_errorMessage);
         } else if (_choices.size() > getLimit()) {
@@ -167,18 +169,8 @@ public class RecommendChangeFacet implements Facet {
         for (int i = 0; i < length; i++) {
             JSONObject oc = a.getJSONObject(i);
             JSONObject ocv = oc.getJSONObject("v");
-            JSONArray predicates = ocv.getJSONArray("predicates");
-            int len = predicates.length();
-            int[] predicateColumnIDs = new int[len];
-            Object[] predicateValues = new Object[len];
-            for (int j = 0; j < len; ++j) {
-                JSONObject predicate = predicates.getJSONObject(j);
-                predicateColumnIDs[j] = predicate.getInt("c");
-                predicateValues[j] = predicate.get("v");
-            }
-            String label = ocv.getString("l");
-            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
-            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
+            DecoratedPredicate decoratedPredicate = DecoratedPredicate.initializeFromJSON(ocv);
+            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredicate);
             nominalPredicate.selected = true;
             _selection.add(nominalPredicate);
         }
@@ -190,21 +182,8 @@ public class RecommendChangeFacet implements Facet {
             JSONObject nominalJson = a.getJSONObject(i);
             String result = nominalJson.getString("r");
             JSONObject predicateJson = nominalJson.getJSONObject("v");
-
-
-            JSONArray predicates = predicateJson.getJSONArray("predicates");
-            int len = predicates.length();
-            int[] predicateColumnIDs = new int[len];
-            Object[] predicateValues = new Object[len];
-            for (int j = 0; j < len; ++j) {
-                JSONObject predicate = predicates.getJSONObject(j);
-                predicateColumnIDs[j] = predicate.getInt("c");
-                predicateValues[j] = predicate.get("v");
-            }
-            String label = predicateJson.getString("l");
-
-            DecoratedPredicate decoratedPredict = new DecoratedPredicate(predicateColumnIDs, predicateValues, label);
-            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredict);
+            DecoratedPredicate decoratedPredicate = DecoratedPredicate.initializeFromJSON(predicateJson);
+            NominalPredicate nominalPredicate = new NominalPredicate(decoratedPredicate);
             nominalPredicate.selected = true;
             nominalPredicate.result = result.equals("true")? 1 : 0;
             _historyChoices.add(nominalPredicate);
@@ -259,7 +238,6 @@ public class RecommendChangeFacet implements Facet {
 
     @Override
     public void computeChoices(Project project, FilteredRecords filteredRecords) {
-//        _choices.add(new NominalPredict(new DecoratedPredict("recommendChange", "Change 'Kazi' to 'Jaewoo' because Phone='120-1788'")));
     }
 
     protected DecoratedPredicate createMatches() {

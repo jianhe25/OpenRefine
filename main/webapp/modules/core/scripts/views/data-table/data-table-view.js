@@ -809,7 +809,6 @@ DataTableView.highlightColumnsByFacetSelection = function(columnIndexs, changeCo
     column_head = $("tr td:nth-child(" + (columnIndex + 2) + ")").slice(0, 1);
     column_head.children().addClass("data-table-cell-background-highlight");
     cells = $("tr td:nth-child(" + (columnIndex + 4) + ")");
-    console.log('old-columnIndex', columnIndex + 4);
     cells = cells.slice(1);
     cells.children().addClass("data-table-cell-background-highlight");
   });
