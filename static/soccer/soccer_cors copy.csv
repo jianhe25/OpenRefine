@@ -1,0 +1,12 @@
+key_columns:SoccerPlayerPosition,PlayerCountry,1.000
+Position,ClubCountry,0.928
+PlayerCountry,SoccerClub,1.000
+PlayerCountry,ClubCountry,1.000
+PlayerCountry,Stadium,1.000
+PlayerCountry,SoccerManager,1.000
+SoccerClub,ClubCountry,SOFT_FD
+SoccerClub,Stadium,SOFT_FD
+SoccerClub,SoccerManager,SOFT_FD
+ClubCountry,Stadium,1.000
+ClubCountry,SoccerManager,1.000
+Stadium,SoccerManager,COR

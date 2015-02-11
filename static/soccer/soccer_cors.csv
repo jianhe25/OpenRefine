@@ -1,0 +1,14 @@
+key_columns:SoccerPlayer
+SoccerClub,ClubCountry:SOFT_FD
+SoccerClub,Stadium:SOFT_FD
+PlayerCountry,Stadium,SoccerClub:SOFT_FD
+Stadium,ClubCountry:SOFT_FD
+SoccerManager,SoccerClub:SOFT_FD
+SoccerClub,SoccerManager:SOFT_FD
+SoccerManager,ClubCountry:SOFT_FD
+SoccerManager,Stadium:SOFT_FD
+PlayerCountry,Stadium,SoccerManager:SOFT_FD
+PlayerCountry,SoccerClub:0.123
+PlayerCountry,ClubCountry:0.387
+PlayerCountry,Stadium:0.133
+PlayerCountry,SoccerManager:0.165

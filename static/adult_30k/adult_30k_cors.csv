@@ -1,0 +1,8 @@
+key_columns:fnlwgtworkclass,occupation,0.181
+education,educationnum,SOFT_FD
+martialstatus,relationship,0.198
+martialstatus,sex,0.107
+martialstatus,agrossincome,0.100
+relationship,sex,0.211
+relationship,agrossincome,0.103
+race,nativecountry,0.125
